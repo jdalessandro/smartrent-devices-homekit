@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from smartrent_homekit.client import SmartRentClient
-from smartrent_homekit.config import AppConfig
-from smartrent_homekit.hap_devices import (
+from smartrent_homekit.homekit.accessories import (
     SmartRentBridge,
     SmartRentLightAccessory,
     SmartRentLockAccessory,
 )
+from smartrent_homekit.smartrent.client import SmartRentClient
+from smartrent_homekit.smartrent.config import AppConfig
 
 
 class DeviceRegistry:

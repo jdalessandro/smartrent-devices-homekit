@@ -9,10 +9,14 @@ from pathlib import Path
 
 from pyhap.accessory_driver import AccessoryDriver
 
-from smartrent_homekit.client import SmartRentClient
-from smartrent_homekit.config import load_config
-from smartrent_homekit.hap_devices import SmartRentBridge
+from smartrent_homekit.homekit.accessories import SmartRentBridge
 from smartrent_homekit.registry import DeviceRegistry
+from smartrent_homekit.smartrent.client import SmartRentClient
+from smartrent_homekit.smartrent.config import load_config
+from smartrent_homekit.smartrent.store import (
+    CREDENTIALS_ENV_FILENAME,
+    apply_smartrent_env_file,
+)
 
 
 def _pincode_from_env() -> bytes:
@@ -29,6 +33,10 @@ def main() -> None:
     )
     log = logging.getLogger("smartrent_homekit")
 
+    config_path = Path(
+        os.environ.get("SMARTRENT_CONFIG", "devices.json")
+    ).expanduser()
+    apply_smartrent_env_file(config_path.parent / CREDENTIALS_ENV_FILENAME)
     config_path = Path(
         os.environ.get("SMARTRENT_CONFIG", "devices.json")
     ).expanduser()
