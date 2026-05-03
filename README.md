@@ -1,0 +1,1 @@
+# smartrent-devices-homekit
