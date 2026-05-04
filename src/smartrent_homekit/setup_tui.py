@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from textual import on, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -228,12 +228,29 @@ class DevicePickerScreen(ModalScreen[DevicePickResult]):
         height: 85%;
         border: tall $accent;
         background: $surface;
-        padding: 1 2;
+    }
+    DevicePickerScreen #dev_instruction {
+        padding: 1 2 0 2;
     }
     DevicePickerScreen ListView {
         height: 1fr;
-        min-height: 8;
+        margin: 0 1;
         border: solid $border;
+    }
+    DevicePickerScreen #dev_footer {
+        height: auto;
+        padding: 1 2 1 2;
+    }
+    DevicePickerScreen #dev_footer Label {
+        margin-bottom: 1;
+    }
+    DevicePickerScreen #dev_footer Horizontal {
+        height: 3;
+        margin-top: 1;
+    }
+    DevicePickerScreen #dev_footer Button {
+        min-width: 14;
+        height: 3;
     }
     """
 
@@ -259,14 +276,16 @@ class DevicePickerScreen(ModalScreen[DevicePickResult]):
             )
         with Vertical():
             yield Label(
-                "Include lights & locks — Enter or click a row to toggle (✓). ↑/↓ to navigate."
+                "Include lights & locks — Enter or click a row to toggle (✓). ↑/↓ to navigate.",
+                id="dev_instruction",
             )
             yield ListView(*items, id="dev_list")
-            yield Label("Poll interval (seconds)")
-            yield Input(value="10", id="poll_interval", type="integer")
-            with Horizontal(classes="buttons"):
-                yield Button("Save", variant="primary", id="dev_save")
-                yield Button("Cancel", id="dev_cancel")
+            with Vertical(id="dev_footer"):
+                yield Label("Poll interval (seconds)")
+                yield Input(value="10", id="poll_interval", type="integer")
+                with Horizontal():
+                    yield Button("Save", variant="primary", id="dev_save")
+                    yield Button("Cancel", id="dev_cancel")
 
     def _toggle(self, index: int) -> None:
         summ = self.summaries[index]

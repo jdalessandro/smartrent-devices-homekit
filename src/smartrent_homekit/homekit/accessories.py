@@ -69,9 +69,9 @@ class SmartRentLightAccessory(SmartRentManagedAccessory):
         if entry.dimmable:
             serv.add_characteristic(self.driver.loader.get_char("Brightness"))
         self.add_service(serv)
-        serv.configure_char("On", setter=self._set_on)
+        serv.configure_char("On", setter_callback=self._set_on)
         if entry.dimmable:
-            serv.configure_char("Brightness", setter=self._set_brightness)
+            serv.configure_char("Brightness", setter_callback=self._set_brightness)
         self.set_info_service(
             manufacturer="SmartRent",
             model="switch_multilevel",
@@ -137,7 +137,7 @@ class SmartRentLockAccessory(SmartRentManagedAccessory):
         serv = self.driver.loader.get_service("LockMechanism")
         self._serv_lock = serv
         self.add_service(serv)
-        serv.configure_char("LockTargetState", setter=self._set_lock_target)
+        serv.configure_char("LockTargetState", setter_callback=self._set_lock_target)
         self.set_info_service(
             manufacturer="SmartRent",
             model="entry_control",
