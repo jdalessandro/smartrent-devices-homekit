@@ -1,0 +1,22 @@
+{
+  "poll_interval_seconds": 10,
+  "devices": [
+    {
+      "name": "Living Room Light",
+      "type": "light",
+      "device_id": 1000001,
+      "dimmable": true
+    },
+    {
+      "name": "Kitchen Light",
+      "type": "light",
+      "device_id": 1000002,
+      "dimmable": true
+    },
+    {
+      "name": "Front Door Lock",
+      "type": "lock",
+      "device_id": 1000100
+    }
+  ]
+}

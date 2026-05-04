@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local SmartRent device list (copy from devices.example.json; may contain real IDs)
+/devices.json
+/smartrent.env
+
