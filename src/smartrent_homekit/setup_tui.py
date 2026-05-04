@@ -25,6 +25,10 @@ from textual.widgets import (
 )
 
 from smartrent_homekit.smartrent.client import SmartRentClient
+from smartrent_homekit.smartrent.config import (
+    DEFAULT_POLL_INTERVAL_SECONDS,
+    normalize_poll_interval_seconds,
+)
 from smartrent_homekit.smartrent.store import (
     CREDENTIALS_ENV_FILENAME,
     get_last_unit_id,
@@ -321,9 +325,16 @@ class DevicePickerScreen(ModalScreen[DevicePickResult]):
             return
         raw_poll = self.query_one("#poll_interval", Input).value.strip()
         try:
-            poll_interval = float(raw_poll)
+            before = float(raw_poll)
         except ValueError:
-            poll_interval = 10.0
+            before = DEFAULT_POLL_INTERVAL_SECONDS
+        poll_interval = normalize_poll_interval_seconds(before, log=log)
+        if poll_interval != before:
+            self.notify(
+                f"Poll interval adjusted to {poll_interval:g} s (invalid or below minimum).",
+                severity="warning",
+                timeout=8,
+            )
         self.dismiss((picked, poll_interval))
 
 

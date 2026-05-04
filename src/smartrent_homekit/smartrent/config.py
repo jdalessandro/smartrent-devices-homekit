@@ -4,11 +4,56 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Literal, Optional
 
 logger = logging.getLogger(__name__)
+
+# Polling uses asyncio.sleep(); non-positive values complete immediately and busy-loop.
+MIN_POLL_INTERVAL_SECONDS = 1.0
+DEFAULT_POLL_INTERVAL_SECONDS = 10.0
+
+
+def normalize_poll_interval_seconds(
+    value: float,
+    *,
+    log: Optional[logging.Logger] = None,
+) -> float:
+    """
+    Clamp invalid poll intervals to safe defaults.
+
+    Zero, negative, NaN, or infinity would make ``asyncio.sleep(interval)``
+    resolve immediately (or behave unexpectedly), starving the event loop and
+    flooding the SmartRent API.
+
+    :param value: Raw interval from config or UI.
+    :param log: If set, emit warnings when the value is adjusted.
+    :returns: A finite interval at least ``MIN_POLL_INTERVAL_SECONDS``.
+    """
+    lg = log or logger
+    if not math.isfinite(value):
+        lg.warning(
+            "poll_interval_seconds must be finite and positive; using %s",
+            DEFAULT_POLL_INTERVAL_SECONDS,
+        )
+        return DEFAULT_POLL_INTERVAL_SECONDS
+    if value <= 0:
+        lg.warning(
+            "poll_interval_seconds must be positive (got %s); using %s",
+            value,
+            DEFAULT_POLL_INTERVAL_SECONDS,
+        )
+        return DEFAULT_POLL_INTERVAL_SECONDS
+    if value < MIN_POLL_INTERVAL_SECONDS:
+        lg.warning(
+            "poll_interval_seconds %s is below minimum %s; clamping",
+            value,
+            MIN_POLL_INTERVAL_SECONDS,
+        )
+        return MIN_POLL_INTERVAL_SECONDS
+    return value
 
 DeviceType = Literal["light", "lock"]
 
@@ -44,7 +89,17 @@ def load_config(path: Path) -> AppConfig:
     if not isinstance(raw, dict):
         raise ValueError("config root must be an object")
 
-    poll = float(raw.get("poll_interval_seconds", 10.0))
+    poll_raw = raw.get("poll_interval_seconds", DEFAULT_POLL_INTERVAL_SECONDS)
+    try:
+        poll_candidate = float(poll_raw)
+    except (TypeError, ValueError):
+        logger.warning(
+            "poll_interval_seconds invalid (%r); using %s",
+            poll_raw,
+            DEFAULT_POLL_INTERVAL_SECONDS,
+        )
+        poll_candidate = DEFAULT_POLL_INTERVAL_SECONDS
+    poll = normalize_poll_interval_seconds(poll_candidate, log=logger)
     devices_raw = raw.get("devices")
     if not isinstance(devices_raw, list) or not devices_raw:
         raise ValueError("`devices` must be a non-empty array")
